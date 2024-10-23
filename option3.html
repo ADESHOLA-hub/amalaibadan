@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Page</title>
+    <link rel="stylesheet" href="option.css">
+</head>
+<body>
+
+    <!-- Back Arrow Section -->
+    <section>
+        <div class="arrow">
+           <a href="menu.html"><img src="images/arrow.png" alt="Back to Menu"></a>
+        </div>
+    </section>
+
+    <!-- Product Section -->
+    <section>
+        <div class="container">
+            <div class="product-image">
+                <img src="images/semovita.webp" alt="Product Image">
+            </div>
+           <!-- Product Details Section -->
+            <div class="product-details">
+                <h1 class="product-name">Semo (Semolina Flour)</h1>
+                <p class="product-price">₦300</p>
+                <p class="product-description">
+                    Semo, made from semolina flour, is a staple in West African cuisine. It has a smooth, dough-like texture that pairs wonderfully with various soups such as Egusi, Ogbono, or Okra. Known for its high fiber content and rich nutritional value, this semolina flour is ideal for healthy eating. Our Semo is sourced from 100% natural wheat, ensuring premium quality for your meals.
+                </p>
+
+                <!-- Quantity Selector -->
+                <div class="quantity">
+                    <button id="decrease-btn">-</button>
+                    <input type="number" id="quantity" value="1" min="1">
+                    <button id="increase-btn">+</button>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <button id="addToCartBtn" class="add-to-cart" data-product-id="3" data-product-name="Semo" data-product-price="300">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Icon -->
+    <div class="cart">
+        <a href="javascript:void(0);" id="cartIcon">
+            <img src="images/cart.png" alt="Cart Icon">
+            <span class="cart-count">0</span>
+        </a>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div id="cartSidebar" class="cart-sidebar">
+        <button id="closeSidebarBtn">&times;</button>
+        <h2>Your Cart</h2>
+        <div id="cartItemsContainer">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+        <!-- Checkout Button -->
+        <button id="checkoutBtn" class="checkout-btn">Checkout</button>
+    </div>
+
+    <script>
+        const increaseBtn = document.getElementById('increase-btn');
+        const decreaseBtn = document.getElementById('decrease-btn');
+        const quantityInput = document.getElementById('quantity');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const cartCount = document.querySelector('.cart-count');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const cartSidebar = document.getElementById('cartSidebar');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const cartIcon = document.getElementById('cartIcon');
+        const checkoutBtn = document.getElementById('checkoutBtn'); // Checkout button
+
+        // Get cart items from localStorage
+        let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+        // Function to save cart to localStorage
+        function saveCart() {
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            cartCount.textContent = cartItems.reduce((total, item) => total + item.quantity, 0);
+        }
+
+        // Increase quantity
+        increaseBtn.addEventListener('click', () => {
+            let quantity = parseInt(quantityInput.value);
+            quantityInput.value = quantity + 1;
+        });
+
+        // Decrease quantity
+        decreaseBtn.addEventListener('click', () => {
+            let quantity = parseInt(quantityInput.value);
+            if (quantity > 1) {
+                quantityInput.value = quantity - 1;
+            }
+        });
+
+        // Add to Cart
+        addToCartBtn.addEventListener('click', () => {
+            let quantity = parseInt(quantityInput.value);
+            let productId = addToCartBtn.getAttribute('data-product-id');
+            let productName = addToCartBtn.getAttribute('data-product-name');
+            let productPrice = parseFloat(addToCartBtn.getAttribute('data-product-price'));
+
+            // Check if the item is already in the cart
+            let existingItem = cartItems.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                // Add new item to the cart
+                cartItems.push({
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    quantity: quantity
+                });
+            }
+
+            // Save the cart to localStorage
+            saveCart();
+
+            // Update cart count and render the items
+            updateCartCount();
+            renderCartItems();
+            cartSidebar.classList.add('show');
+        });
+
+        // Open Sidebar when Cart Icon is clicked
+        cartIcon.addEventListener('click', () => {
+            cartSidebar.classList.add('show');
+        });
+
+        // Close Sidebar when Close Button is clicked
+        closeSidebarBtn.addEventListener('click', () => {
+            cartSidebar.classList.remove('show');
+        });
+
+        // Remove item from cart
+        function removeItem(productId) {
+            cartItems = cartItems.filter(item => item.id !== productId);
+            saveCart(); // Save the updated cart to localStorage
+            updateCartCount();
+            renderCartItems();
+        }
+
+        // Render Cart Items
+        function renderCartItems() {
+            cartItemsContainer.innerHTML = ''; // Clear the cart first
+
+            cartItems.forEach(item => {
+                let cartItem = document.createElement('div');
+                cartItem.classList.add('cart-item');
+                cartItem.innerHTML = `
+                    <p>${item.quantity} x ${item.name}</p>
+                    <p>₦${(item.price * item.quantity).toFixed(2)}</p>
+                    <button class="delete-btn" data-product-id="${item.id}">Delete</button>
+                `;
+                cartItemsContainer.appendChild(cartItem);
+            });
+
+            // Add event listeners to delete buttons
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = button.getAttribute('data-product-id');
+                    removeItem(productId);
+                });
+            });
+        }
+
+        // Initialize cart on page load
+        window.addEventListener('load', () => {
+            updateCartCount();
+            renderCartItems();
+        });
+
+        // Checkout button event listener
+        checkoutBtn.addEventListener('click', () => {
+            if (cartItems.length > 0) {
+                alert('Proceeding to checkout...');
+                // Redirect to checkout page or perform checkout functionality
+                window.location.href = 'checkout.html'; // Example of redirect to a checkout page
+            } else {
+                alert('Your cart is empty!');
+            }
+        });
+    </script>
+
+</body>
+</html>

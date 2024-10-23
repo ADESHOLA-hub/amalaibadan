@@ -1,0 +1,48 @@
+<script>
+    const track = document.querySelector('.carousel-track');
+    const slides = Array.from(track.children);
+    const nextButton = document.getElementById('nextBtn');
+    const prevButton = document.getElementById('prevBtn');
+    let currentSlide = 0;
+
+    // Set the width of each slide based on container width
+    const setSlideWidth = () => {
+      const slideWidth = track.getBoundingClientRect().width;
+      slides.forEach((slide, index) => {
+        slide.style.left = `${slideWidth * index}px`;
+      });
+    };
+
+    setSlideWidth(); // Set initial width
+
+    window.addEventListener('resize', setSlideWidth); // Reset width on window resize
+
+    // Move to the next slide
+    const moveToSlide = (currentSlideIndex) => {
+      const amountToMove = slides[currentSlideIndex].style.left;
+      track.style.transform = `translateX(-${amountToMove})`;
+    };
+
+    // Next button functionality
+    nextButton.addEventListener('click', () => {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        moveToSlide(currentSlide);
+      } else {
+        currentSlide = 0; // Loop back to the first slide
+        moveToSlide(currentSlide);
+      }
+    });
+
+    // Previous button functionality
+    prevButton.addEventListener('click', () => {
+      if (currentSlide > 0) {
+        currentSlide--;
+        moveToSlide(currentSlide);
+      } else {
+        currentSlide = slides.length - 1; // Loop back to the last slide
+        moveToSlide(currentSlide);
+      }
+    });
+
+    https://fonts.google.com/specimen/Matemasie?query=ma
